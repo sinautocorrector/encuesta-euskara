@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disponibilité – Entretiens euskara</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: #e2e0db;
+    --text: #2a2825;
+    --muted: #9a958e;
+    --red: #b5433a;
+    --red-soft: rgba(181,67,58,0.07);
+    --green: #3a8c5c;
+    --green-soft: rgba(58,140,92,0.1);
+    --accent: #4a7fa5;
+    --accent-soft: rgba(74,127,165,0.09);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 24px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(74,127,165,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .lauburu { font-size: 20px; margin-bottom: 12px; opacity: 0.3; letter-spacing: 6px; }
+  .project-tag {
+    display: inline-block; border: 1px solid var(--red); color: var(--red);
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    padding: 3px 12px; margin-bottom: 14px; font-weight: 500;
+  }
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(22px, 5vw, 32px); font-weight: 500; line-height: 1.2; margin-bottom: 8px;
+  }
+  .header h1 em { font-style: italic; color: var(--accent); }
+  .header p { font-size: 12.5px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.7; }
+
+  /* PROGRESS */
+  .progress-wrap { max-width: 560px; margin: 24px auto 0; padding: 0 24px; }
+  .progress-bar { display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .progress-bar::before {
+    content: ''; position: absolute; top: 11px; left: 12px; right: 12px;
+    height: 1px; background: var(--border); z-index: 0;
+  }
+  .progress-fill {
+    position: absolute; top: 11px; left: 12px; height: 1px;
+    background: var(--accent); z-index: 1; transition: width 0.4s ease; width: 0%;
+  }
+  .step-item { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; }
+  .step-circle {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--muted); font-weight: 500; transition: all 0.3s;
+  }
+  .step-item.active .step-circle { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .step-item.done .step-circle { border-color: var(--accent); background: var(--accent); color: white; }
+  .step-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); transition: color 0.3s; }
+  .step-item.active .step-label, .step-item.done .step-label { color: var(--accent); }
+
+  /* MAIN */
+  .main { max-width: 560px; margin: 0 auto; padding: 36px 20px 0; }
+  .step { display: none; animation: fadeUp 0.35s ease forwards; }
+  .step.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+  .step-subtitle { font-size: 12px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+
+  /* FIELDS */
+  .fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+  .field-wrap label {
+    display: block; font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px; font-weight: 500;
+  }
+  .field-wrap input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 14px; padding: 12px 16px; outline: none;
+    transition: border-color 0.2s; -webkit-appearance: none; border-radius: 0;
+  }
+  .field-wrap input:focus { border-color: var(--accent); }
+  .field-wrap input::placeholder { color: var(--muted); opacity: 0.6; }
+
+  /* WEEK CARDS */
+  .cards-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .sel-card {
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .sel-card:hover { border-color: var(--accent); }
+  .sel-card.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .sel-card.selected-red { border-color: var(--red); background: var(--red-soft); }
+  .card-inner { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+  .chk {
+    width: 20px; height: 20px; border: 1.5px solid var(--border);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: transparent;
+    transition: all 0.2s; border-radius: 3px;
+  }
+  .sel-card.selected .chk { border-color: var(--accent); background: var(--accent); color: white; }
+  .sel-card.selected-red .chk { border-color: var(--red); background: var(--red); color: white; }
+  .card-text { flex: 1; }
+  .card-main { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; line-height: 1.2; }
+  .sel-card.selected .card-main { color: var(--accent); }
+  .card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .card-badge {
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--green); border: 1px solid rgba(58,140,92,0.3);
+    padding: 2px 8px; background: var(--green-soft); white-space: nowrap;
+  }
+
+  /* DAY ROWS */
+  .day-slots-wrap { margin-bottom: 8px; }
+  .day-row { border: 1px solid var(--border); background: var(--surface); margin-bottom: 8px; overflow: hidden; }
+  .day-header {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+    cursor: pointer; transition: background 0.2s; user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .day-header:hover { background: var(--bg); }
+  .day-header.day-selected { background: var(--accent-soft); }
+  .day-chk {
+    width: 20px; height: 20px; border: 1.5px solid var(--border);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: transparent; transition: all 0.2s; border-radius: 3px;
+  }
+  .day-header.day-selected .day-chk { border-color: var(--accent); background: var(--accent); color: white; }
+  .day-label-wrap { flex: 1; }
+  .day-label-name { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; }
+  .day-header.day-selected .day-label-name { color: var(--accent); }
+  .day-arrow { font-size: 10px; color: var(--muted); transition: transform 0.2s; }
+  .day-header.day-selected .day-arrow { transform: rotate(90deg); color: var(--accent); }
+  .day-slots { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+  .day-header.day-selected + .day-slots { display: block; }
+  .slots-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .slot-pill {
+    border: 1px solid var(--border); background: var(--bg);
+    cursor: pointer; padding: 10px 12px; text-align: center;
+    transition: border-color 0.2s, background 0.2s; user-select: none;
+  }
+  .slot-pill:hover { border-color: var(--accent); }
+  .slot-pill.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .slot-time { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 500; }
+  .slot-pill.selected .slot-time { color: var(--accent); }
+  .slot-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .week-section-label {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--accent); margin: 20px 0 10px; font-weight: 500;
+  }
+
+  /* SUMMARY (step 5) */
+  .summary-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .summary-section-title {
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--accent); font-weight: 500;
+    padding: 10px 16px;
+    background: var(--accent-soft);
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-row {
+    display: flex; gap: 12px; padding: 10px 16px;
+    border-bottom: 1px solid var(--bg);
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key {
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); min-width: 90px; padding-top: 2px; flex-shrink: 0;
+  }
+  .summary-val { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  .summary-dispo-row {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--bg);
+  }
+  .summary-dispo-row:last-child { border-bottom: none; }
+  .summary-dispo-day { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .summary-dispo-slots { display: flex; gap: 6px; flex-wrap: wrap; }
+  .summary-slot-tag {
+    font-size: 11px; color: var(--accent);
+    border: 1px solid rgba(74,127,165,0.3);
+    background: var(--accent-soft);
+    padding: 2px 8px;
+  }
+
+  .edit-link {
+    font-size: 11px; color: var(--accent); text-decoration: underline;
+    cursor: pointer; display: inline-block; margin-bottom: 20px;
+  }
+
+  /* BUTTONS */
+  .btn-row { display: flex; gap: 10px; }
+  .btn-next {
+    flex: 1; background: var(--accent); color: white; border: none;
+    font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase; padding: 16px;
+    cursor: pointer; transition: background 0.2s; -webkit-appearance: none; border-radius: 0;
+  }
+  .btn-next:hover { background: #3a6a8a; }
+  .btn-confirm {
+    flex: 1; background: var(--green); color: white; border: none;
+    font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase; padding: 16px;
+    cursor: pointer; transition: background 0.2s; -webkit-appearance: none; border-radius: 0;
+  }
+  .btn-confirm:hover { background: #2a7a4c; }
+  .btn-back {
+    background: transparent; color: var(--muted); border: 1px solid var(--border);
+    font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 400;
+    letter-spacing: 2px; text-transform: uppercase; padding: 16px 20px;
+    cursor: pointer; transition: border-color 0.2s, color 0.2s; -webkit-appearance: none; border-radius: 0;
+  }
+  .btn-back:hover { border-color: var(--text); color: var(--text); }
+
+  .error-msg { font-size: 11px; color: var(--red); margin-bottom: 10px; display: none; }
+  .error-msg.visible { display: block; }
+
+  .footer-note {
+    font-size: 11px; color: var(--muted); line-height: 1.6;
+    margin-bottom: 20px; padding: 12px 14px; border-left: 2px solid var(--border);
+  }
+
+  /* SUCCESS */
+  .success-screen { display: none; text-align: center; padding: 60px 24px; animation: fadeUp 0.4s ease; }
+  .success-screen.visible { display: block; }
+  .success-icon { font-size: 40px; margin-bottom: 20px; color: var(--accent); }
+  .success-screen h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; margin-bottom: 10px; }
+  .success-screen p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="lauburu">✦ ✦ ✦</div>
+  <div class="project-tag">Projet PaRL — Thèse de doctorat</div>
+  <h1>Entretiens<br><em>enseignant·e·s d'euskara</em></h1>
+  <p>Dans le cadre de ma thèse de sociolinguistique, je recherche des enseignant·e·s de langue basque (tous niveaux) pour un entretien semi-directif d'environ 45 min à 1h.</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+    <div class="step-item active" id="si1"><div class="step-circle">1</div><div class="step-label">Vous</div></div>
+    <div class="step-item" id="si2"><div class="step-circle">2</div><div class="step-label">Lieu</div></div>
+    <div class="step-item" id="si3"><div class="step-circle">3</div><div class="step-label">Semaine</div></div>
+    <div class="step-item" id="si4"><div class="step-circle">4</div><div class="step-label">Créneaux</div></div>
+    <div class="step-item" id="si5"><div class="step-circle">5</div><div class="step-label">Confirmer</div></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- STEP 1 -->
+  <div class="step active" id="step1">
+    <div class="step-title">Vos coordonnées</div>
+    <div class="step-subtitle">Ces informations resteront confidentielles et seront utilisées uniquement dans le cadre de cette recherche.</div>
+    <div class="fields">
+      <div class="field-wrap">
+        <label for="name">Nom et prénom *</label>
+        <input type="text" id="name" placeholder="ex. : Itziar Etxeberri" autocomplete="name">
+      </div>
+      <div class="field-wrap">
+        <label for="email">Adresse e-mail *</label>
+        <input type="email" id="email" placeholder="votre@email.com" autocomplete="email">
+      </div>
+      <div class="field-wrap">
+        <label for="phone">Téléphone</label>
+        <input type="tel" id="phone" placeholder="+33 6 XX XX XX XX" autocomplete="tel">
+      </div>
+    </div>
+    <div class="error-msg" id="err1">Merci de renseigner votre nom et votre e-mail.</div>
+    <button class="btn-next" onclick="goTo(2)">Continuer →</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="step2">
+    <div class="step-title">Où enseignez-vous ?</div>
+    <div class="step-subtitle">Cela m'aidera à organiser mes déplacements au Pays basque selon les zones géographiques.</div>
+    <div class="fields">
+      <div class="field-wrap">
+        <label for="location">Ville / Commune *</label>
+        <input type="text" id="location" placeholder="ex. : Bayonne, Mauléon, Hasparren...">
+      </div>
+      <div class="field-wrap">
+        <label for="school">Établissement (facultatif)</label>
+        <input type="text" id="school" placeholder="ex. : Collège Ramiro Arrue">
+      </div>
+    </div>
+    <div class="error-msg" id="err2">Merci d'indiquer votre ville ou commune.</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(1)">← Retour</button>
+      <button class="btn-next" onclick="goTo(3)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step3">
+    <div class="step-title">Quelle(s) semaine(s) vous conviennent ?</div>
+    <div class="step-subtitle">Sélectionnez toutes les semaines possibles. Je me déplacerai et m'adapterai à vos disponibilités.</div>
+    <div class="cards-grid" id="weeksGrid">
+      <div class="sel-card" onclick="toggleWeekCard(this)">
+        <div class="card-inner">
+          <div class="chk">✓</div>
+          <div class="card-text">
+            <div class="card-main">21 – 25 avril 2026</div>
+            <div class="card-sub">Première semaine après les vacances de Pâques</div>
+          </div>
+          <div class="card-badge">Dispo</div>
+        </div>
+      </div>
+      <div class="sel-card" onclick="toggleWeekCard(this)">
+        <div class="card-inner">
+          <div class="chk">✓</div>
+          <div class="card-text">
+            <div class="card-main">27 avril – 1 mai 2026</div>
+            <div class="card-sub">Lun. – Jeu. · Vendredi 1er mai férié</div>
+          </div>
+          <div class="card-badge">Dispo</div>
+        </div>
+      </div>
+      <div class="sel-card" onclick="toggleWeekCard(this)">
+        <div class="card-inner">
+          <div class="chk">✓</div>
+          <div class="card-text">
+            <div class="card-main">4 – 8 mai 2026</div>
+            <div class="card-sub">Lun. – Jeu. · Vendredi 8 mai férié</div>
+          </div>
+          <div class="card-badge">Dispo</div>
+        </div>
+      </div>
+      <div class="sel-card" onclick="toggleWeekCard(this)">
+        <div class="card-inner">
+          <div class="chk">✓</div>
+          <div class="card-text">
+            <div class="card-main">18 – 22 mai 2026</div>
+            <div class="card-sub">Après le pont de l'Ascension</div>
+          </div>
+          <div class="card-badge">Dispo</div>
+        </div>
+      </div>
+    </div>
+    <div class="sel-card" id="unavailCard" onclick="toggleUnavail()">
+      <div class="card-inner">
+        <div class="chk">✓</div>
+        <div class="card-text">
+          <div class="card-sub" style="font-size:13px;">Aucune de ces semaines ne me convient, mais je souhaite participer — vous pouvez me contacter.</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-msg" id="err3">Merci de sélectionner au moins une option.</div>
+    <div class="btn-row" style="margin-top:20px;">
+      <button class="btn-back" onclick="goTo(2)">← Retour</button>
+      <button class="btn-next" onclick="goTo(4)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" id="step4">
+    <div class="step-title">Jours et créneaux</div>
+    <div class="step-subtitle">Cliquez sur un jour pour l'ouvrir, puis sélectionnez les créneaux disponibles ce jour-là.</div>
+    <div id="daysAndSlots"></div>
+    <div class="footer-note">L'entretien dure environ 45 min à 1h. Je m'adapterai au créneau qui vous convient le mieux.</div>
+    <div class="error-msg" id="err4">Merci de sélectionner au moins un jour avec un créneau.</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(3)">← Retour</button>
+      <button class="btn-next" onclick="goTo(5)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: CONFIRMATION -->
+  <div class="step" id="step5">
+    <div class="step-title">Vérifiez vos informations</div>
+    <div class="step-subtitle">Voici un récapitulatif de vos réponses. Vérifiez que tout est correct avant d'envoyer.</div>
+
+    <div class="summary-block">
+      <div class="summary-section-title">Coordonnées</div>
+      <div class="summary-row">
+        <div class="summary-key">Nom</div>
+        <div class="summary-val" id="sum-name">—</div>
+      </div>
+      <div class="summary-row">
+        <div class="summary-key">E-mail</div>
+        <div class="summary-val" id="sum-email">—</div>
+      </div>
+      <div class="summary-row">
+        <div class="summary-key">Téléphone</div>
+        <div class="summary-val" id="sum-phone">—</div>
+      </div>
+    </div>
+
+    <div class="summary-block">
+      <div class="summary-section-title">Lieu d'enseignement</div>
+      <div class="summary-row">
+        <div class="summary-key">Ville</div>
+        <div class="summary-val" id="sum-location">—</div>
+      </div>
+      <div class="summary-row" id="sum-school-row">
+        <div class="summary-key">Établ.</div>
+        <div class="summary-val" id="sum-school">—</div>
+      </div>
+    </div>
+
+    <div class="summary-block" id="sum-dispo-block">
+      <div class="summary-section-title">Disponibilités</div>
+      <div id="sum-dispo-content"></div>
+    </div>
+
+    <span class="edit-link" onclick="goTo(1)">← Modifier mes réponses</span>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goTo(4)">← Retour</button>
+      <button class="btn-confirm" onclick="submitForm()">✓ Confirmer et envoyer</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✦</div>
+    <h2>Eskerrik asko !</h2>
+    <p>Votre réponse a bien été enregistrée.<br>Je vous contacterai prochainement pour convenir des détails de l'entretien.</p>
+  </div>
+
+</div>
+
+<script>
+  var currentStep = 1;
+  var formData = {};
+
+  var weekDefs = [
+    {
+      label: '21 – 25 avril 2026',
+      days: [
+        { short: 'Lun 21 avr.' }, { short: 'Mar 22 avr.' },
+        { short: 'Mer 23 avr.' }, { short: 'Jeu 24 avr.' }, { short: 'Ven 25 avr.' }
+      ]
+    },
+    {
+      label: '27 avril – 1 mai 2026',
+      days: [
+        { short: 'Lun 27 avr.' }, { short: 'Mar 28 avr.' },
+        { short: 'Mer 29 avr.' }, { short: 'Jeu 30 avr.' }
+      ]
+    },
+    {
+      label: '4 – 8 mai 2026',
+      days: [
+        { short: 'Lun 4 mai' }, { short: 'Mar 5 mai' },
+        { short: 'Mer 6 mai' }, { short: 'Jeu 7 mai' }
+      ]
+    },
+    {
+      label: '18 – 22 mai 2026',
+      days: [
+        { short: 'Lun 18 mai' }, { short: 'Mar 19 mai' }, { short: 'Mer 20 mai' },
+        { short: 'Jeu 21 mai' }, { short: 'Ven 22 mai' }
+      ]
+    }
+  ];
+
+  var slotDefs = [
+    { time: '9h – 11h', label: 'Matin' },
+    { time: '10h – 12h', label: 'Matin' },
+    { time: '14h – 16h', label: 'Après-midi' },
+    { time: '15h – 17h', label: 'Après-midi' }
+  ];
+
+  function toggleWeekCard(card) {
+    document.getElementById('unavailCard').classList.remove('selected-red');
+    card.classList.toggle('selected');
+  }
+
+  function toggleUnavail() {
+    var unavail = document.getElementById('unavailCard');
+    var isSelected = unavail.classList.contains('selected-red');
+    document.querySelectorAll('#weeksGrid .sel-card').forEach(function(c) { c.classList.remove('selected'); });
+    if (isSelected) { unavail.classList.remove('selected-red'); }
+    else { unavail.classList.add('selected-red'); }
+  }
+
+  function buildStep4() {
+    var container = document.getElementById('daysAndSlots');
+    container.innerHTML = '';
+    var selectedWeeks = [];
+    document.querySelectorAll('#weeksGrid .sel-card.selected').forEach(function(card) {
+      var label = card.querySelector('.card-main').textContent.trim();
+      weekDefs.forEach(function(w) { if (w.label === label) selectedWeeks.push(w); });
+    });
+
+    selectedWeeks.forEach(function(week, wi) {
+      var sectionLabel = document.createElement('div');
+      sectionLabel.className = 'week-section-label';
+      if (wi > 0) sectionLabel.style.marginTop = '28px';
+      sectionLabel.textContent = week.label;
+      container.appendChild(sectionLabel);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'day-slots-wrap';
+
+      week.days.forEach(function(day) {
+        var dayRow = document.createElement('div');
+        dayRow.className = 'day-row';
+
+        var dayHeader = document.createElement('div');
+        dayHeader.className = 'day-header';
+        dayHeader.innerHTML =
+          '<div class="day-chk">✓</div>' +
+          '<div class="day-label-wrap"><div class="day-label-name">' + day.short + '</div></div>' +
+          '<div class="day-arrow">▶</div>';
+
+        var daySlots = document.createElement('div');
+        daySlots.className = 'day-slots';
+        var slotsInner = document.createElement('div');
+        slotsInner.className = 'slots-inner';
+
+        slotDefs.forEach(function(slot) {
+          var pill = document.createElement('div');
+          pill.className = 'slot-pill';
+          pill.setAttribute('data-day', day.short);
+          pill.setAttribute('data-week', week.label);
+          pill.setAttribute('data-slot', slot.time);
+          pill.innerHTML = '<div class="slot-time">' + slot.time + '</div><div class="slot-sub">' + slot.label + '</div>';
+          pill.onclick = function(e) { e.stopPropagation(); pill.classList.toggle('selected'); };
+          slotsInner.appendChild(pill);
+        });
+
+        daySlots.appendChild(slotsInner);
+        dayHeader.onclick = function() {
+          dayHeader.classList.toggle('day-selected');
+          if (!dayHeader.classList.contains('day-selected')) {
+            slotsInner.querySelectorAll('.slot-pill').forEach(function(p) { p.classList.remove('selected'); });
+          }
+        };
+
+        dayRow.appendChild(dayHeader);
+        dayRow.appendChild(daySlots);
+        wrap.appendChild(dayRow);
+      });
+
+      container.appendChild(wrap);
+    });
+  }
+
+  function buildSummary() {
+    // Contact
+    document.getElementById('sum-name').textContent = document.getElementById('name').value.trim();
+    document.getElementById('sum-email').textContent = document.getElementById('email').value.trim();
+    document.getElementById('sum-phone').textContent = document.getElementById('phone').value.trim() || 'Non renseigné';
+    document.getElementById('sum-location').textContent = document.getElementById('location').value.trim();
+    var school = document.getElementById('school').value.trim();
+    if (school) {
+      document.getElementById('sum-school').textContent = school;
+      document.getElementById('sum-school-row').style.display = 'flex';
+    } else {
+      document.getElementById('sum-school-row').style.display = 'none';
+    }
+
+    // Disponibilités
+    var dispoContent = document.getElementById('sum-dispo-content');
+    dispoContent.innerHTML = '';
+
+    var isUnavail = document.getElementById('unavailCard').classList.contains('selected-red');
+    if (isUnavail) {
+      var row = document.createElement('div');
+      row.className = 'summary-dispo-row';
+      row.innerHTML = '<div class="summary-dispo-day" style="color:var(--muted);font-weight:300;">Aucune semaine disponible — à contacter</div>';
+      dispoContent.appendChild(row);
+      return;
+    }
+
+    var hasAny = false;
+    document.querySelectorAll('.day-header.day-selected').forEach(function(header) {
+      var dayName = header.querySelector('.day-label-name').textContent.trim();
+      var wrap = header.closest('.day-row').parentElement;
+      var section = wrap.previousElementSibling;
+      var weekLabel = (section && section.className === 'week-section-label') ? section.textContent.trim() : '';
+      var selectedSlots = [];
+      header.nextElementSibling.querySelectorAll('.slot-pill.selected').forEach(function(p) {
+        selectedSlots.push(p.getAttribute('data-slot'));
+      });
+      if (selectedSlots.length > 0) {
+        hasAny = true;
+        var row = document.createElement('div');
+        row.className = 'summary-dispo-row';
+        var dayDiv = document.createElement('div');
+        dayDiv.className = 'summary-dispo-day';
+        dayDiv.textContent = dayName + (weekLabel ? ' · ' + weekLabel : '');
+        var slotsDiv = document.createElement('div');
+        slotsDiv.className = 'summary-dispo-slots';
+        selectedSlots.forEach(function(s) {
+          var tag = document.createElement('span');
+          tag.className = 'summary-slot-tag';
+          tag.textContent = s;
+          slotsDiv.appendChild(tag);
+        });
+        row.appendChild(dayDiv);
+        row.appendChild(slotsDiv);
+        dispoContent.appendChild(row);
+      }
+    });
+
+    if (!hasAny) {
+      var row = document.createElement('div');
+      row.className = 'summary-dispo-row';
+      row.innerHTML = '<div class="summary-dispo-day" style="color:var(--muted);font-weight:300;">Aucun créneau sélectionné</div>';
+      dispoContent.appendChild(row);
+    }
+  }
+
+  function updateProgress(step) {
+    var fills = [0, 0, 25, 50, 75, 100];
+    document.getElementById('progressFill').style.width = fills[step] + '%';
+    for (var i = 1; i <= 5; i++) {
+      var el = document.getElementById('si' + i);
+      el.classList.remove('active', 'done');
+      if (i < step) el.classList.add('done');
+      else if (i === step) el.classList.add('active');
+    }
+  }
+
+  function goTo(step) {
+    var err;
+    if (step > currentStep) {
+      if (currentStep === 1) {
+        var name = document.getElementById('name').value.trim();
+        var email = document.getElementById('email').value.trim();
+        err = document.getElementById('err1');
+        if (!name || !email) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+      }
+      if (currentStep === 2) {
+        var loc = document.getElementById('location').value.trim();
+        err = document.getElementById('err2');
+        if (!loc) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+      }
+      if (currentStep === 3) {
+        var hasWeek = document.querySelectorAll('#weeksGrid .sel-card.selected').length > 0;
+        var hasUnavail = document.getElementById('unavailCard').classList.contains('selected-red');
+        err = document.getElementById('err3');
+        if (!hasWeek && !hasUnavail) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+        if (hasUnavail) {
+          // Skip step 4, go straight to confirmation
+          buildSummary();
+          document.getElementById('step' + currentStep).classList.remove('active');
+          currentStep = 5;
+          document.getElementById('step5').classList.add('active');
+          updateProgress(5);
+          window.scrollTo(0, 0);
+          return;
+        }
+        buildStep4();
+      }
+      if (currentStep === 4) {
+        var hasAny = false;
+        document.querySelectorAll('.day-header.day-selected').forEach(function(header) {
+          if (header.nextElementSibling.querySelectorAll('.slot-pill.selected').length > 0) hasAny = true;
+        });
+        err = document.getElementById('err4');
+        if (!hasAny) { err.classList.add('visible'); return; }
+        err.classList.remove('visible');
+        buildSummary();
+      }
+    }
+
+    document.getElementById('step' + currentStep).classList.remove('active');
+    currentStep = step;
+    document.getElementById('step' + currentStep).classList.add('active');
+    updateProgress(currentStep);
+    window.scrollTo(0, 0);
+  }
+
+  function submitForm() {
+    var isUnavail = document.getElementById('unavailCard').classList.contains('selected-red');
+    var results = [];
+
+    if (!isUnavail) {
+      document.querySelectorAll('.day-header.day-selected').forEach(function(header) {
+        var dayName = header.querySelector('.day-label-name').textContent.trim();
+        var wrap = header.closest('.day-row').parentElement;
+        var section = wrap.previousElementSibling;
+        var weekLabel = (section && section.className === 'week-section-label') ? section.textContent.trim() : '';
+        var selectedSlots = [];
+        header.nextElementSibling.querySelectorAll('.slot-pill.selected').forEach(function(p) {
+          selectedSlots.push(p.getAttribute('data-slot'));
+        });
+        if (selectedSlots.length > 0) {
+          results.push(dayName + ' (' + weekLabel + ') : ' + selectedSlots.join(', '));
+        }
+      });
+    }
+
+    var selectedWeeks = [];
+    document.querySelectorAll('#weeksGrid .sel-card.selected .card-main').forEach(function(el) {
+      selectedWeeks.push(el.textContent.trim());
+    });
+
+    var data = {
+      nom: document.getElementById('name').value.trim(),
+      _replyto: document.getElementById('email').value.trim(),
+      courriel: document.getElementById('email').value.trim(),
+      telephone: document.getElementById('phone').value.trim() || 'Non renseigné',
+      lieu: document.getElementById('location').value.trim(),
+      etablissement: document.getElementById('school').value.trim() || 'Non renseigné',
+      semaines: isUnavail ? 'Non disponible sur ces dates' : selectedWeeks.join(' / '),
+      disponibilites: isUnavail ? 'Non disponible sur ces dates — à contacter' : results.join(' | ')
+    };
+
+    fetch('https://formspree.io/f/xbdpkezr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function(response) {
+      return response.json();
+    }).then(function(json) {
+      console.log('Formspree:', JSON.stringify(json));
+      showSuccess();
+    }).catch(function(e) {
+      console.warn(e);
+      showSuccess();
+    });
+  }
+
+  function showSuccess() {
+    document.getElementById('step' + currentStep).classList.remove('active');
+    document.getElementById('successScreen').classList.add('visible');
+    document.getElementById('progressFill').style.width = '100%';
+    for (var i = 1; i <= 5; i++) {
+      var el = document.getElementById('si' + i);
+      el.classList.remove('active');
+      el.classList.add('done');
+    }
+    window.scrollTo(0, 0);
+  }
+
+  updateProgress(1);
+</script>
+
+</body>
+</html>
